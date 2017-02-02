@@ -30,21 +30,19 @@ create table Performance
 day date not null,
 name varchar (30),
 title varchar (100),
--- primary key(day),
 foreign key (name) references Theater(name),
 foreign key (title) references Movie(title),
 constraint unique(day, name, title));
 
 drop table if exists Reservation;
 create table Reservation
-(reservedNr integer auto_increment,
-ms integer not null,
+(reservationID integer auto_increment,
+MovieShowingid integer not null,
 username varchar (30),
--- forday date,
-primary key (reservedNr),
+primary key (reservationID),
 foreign key(username) references User(username),
-foreign key(ms) references Performance(id),
-constraint UNIQUE (ms, username)
+foreign key(MovieShowingid) references Performance(id),
+constraint UNIQUE (MovieShowingid, username)
 );
 
 -- End of table setup
@@ -95,20 +93,33 @@ insert into Performance (day, title, name)
 values ('2017-01-23', 'Prometheus', 'SF');
 insert into Performance (day, title, name)
 values ('2013-03-06', 'Hateful Eight', 'Filmstaden Linköping');
+insert into Performance (day, title, name)
+values ('2013-03-06', 'Sun', 'SF');
+
+
 
 -- duplicate test
 insert into Performance (day, title, name)
 values ('2013-03-06', 'Hateful Eight', 'Filmstaden Linköping');
--- gives = ERROR 1062 (23000): Duplicate entry '2013-03-06-Filmstaden Linköping-Hateful Eight' for key 'day'
+-- gives = ERROR 1062 (23000): Duplicate entry '2013-03-06-FilMovieShowingidtaden Linköping-Hateful Eight' for key 'day'
 
 -- Create reservation 
-insert into Reservation(ms, username)
+insert into Reservation(MovieShowingid, username)
 select Performance.id, User.username
 from Performance, User, Movie where Performance.day='2013-03-06'
-and Movie.title='Prometheus' and username="Cicero";
+and Performance.title='Prometheus' and username="Cicero";
 
 
-insert into Reservation(ms, username) select Performance.id, User.username  from Performance, User, Movie where Performance.day='2017-01-23' and User.username='Spartacus' and Movie.title='Prometheus';
+insert into Reservation(MovieShowingid, username) 
+select Performance.id, User.username 
+from Performance, User, Movie 
+where Performance.day='2017-01-23' and User.username='Spartacus' and Movie.title='Prometheus';
 
-select * from Reservation left join Performance on Performance.id=Reservation.ms;
+select * from Reservation left join Performance on Performance.id=Reservation.MovieShowingid;
 
+
+-- Question 9
+-- Ett data-race uppstår, en hazard som gör att range over flow av värden kan ske, tex att 
+-- det blir för många bokningar. 
+
+-- Övn. 10 
