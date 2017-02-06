@@ -73,11 +73,13 @@ public class BookingTab {
 					String date = datesList.getSelectionModel().getSelectedItem();
 					System.out.println("Movie: " + movie + " date: " + date);
 					Show s = db.getShowData(movie, date);
-					if(!(s.getSeats() <= 0)) db.makeBooking(s);
-					/* --- TODO: should attempt to book a ticket via the database --- */
-					/* --- do not forget to report booking number! --- */
-					/* --- update the displayed details (free seats) --- */
-					report("Booked one ticket to "+movie+" on "+date);
+					int ticket = 0;
+					if(!(s.getSeats() <= 0)) 
+						ticket = db.makeBooking(s);
+					else { 
+						System.out.println("No seats left!");
+					}
+					report("Booked one ticket to "+movie+" on "+date +" \n with booking number: " + ticket);
 				});
 		
 		report("Ready.");

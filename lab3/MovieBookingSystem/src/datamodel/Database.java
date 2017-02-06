@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import javax.naming.spi.DirStateFactory.Result;
+import javax.swing.plaf.synth.SynthSeparatorUI;
 import javax.swing.text.html.ListView;
 
 import com.mysql.jdbc.MySQLConnection;
@@ -66,7 +67,7 @@ public class Database {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection("jdbc:mysql://localhost/lab2?" +
-            		"user=root&password=abc123"); 
+            		"user=root&password=idx2003"); 
             // conn = DriverManager.getConnection("jdbc:mysql://" + server[IV.HOME.getValue()] + "/lab2", usrName[IV.HOME.getValue()], pword[IV.HOME.getValue()]);
         }
         catch (SQLException e) {
@@ -101,20 +102,7 @@ public class Database {
 		return theData;
     }
     
-    public boolean login(String uname) {
-        java.sql.Statement stmt = null;
-        try {
-            stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT username FROM User WHERE username = '" + uname + "'");
-            if (rs.next()) {
-                currName = uname;
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
+
     
     /**
      * Close the connection to the database.
@@ -140,6 +128,51 @@ public class Database {
         return conn != null;
     }
     
+
+    
+
+    
+  	public Show getShowData(String mTitle, String mDate) {
+		Integer mFreeSeats = null;
+		String mVenue = null;
+        if(isConnected()) {
+        	System.out.println("We are live. biatch");
+        	try {
+        		String query = null;
+        		query = "select movieTitle, dayOfShow, freeSeats, theaterName from Shows where movieTitle='"+mTitle + "' and " + "dayOfShow='" + mDate+"'";
+    			java.sql.Statement stmta = conn.createStatement();
+    			ResultSet rs = stmta.executeQuery(query);
+    			//		rs.last(); // used to go "beyond" the table, therefore grab the last row
+    			if(rs.next()) {
+    				mVenue = rs.getString("theaterName");
+        			mFreeSeats = rs.getInt("freeSeats");
+        			System.out.println("Found movie showing at: " + mVenue + " at the date you given; " + rs.getString("dayOfShow"));
+        			System.out.println("Remaining seats are : " + mFreeSeats);	
+    			}
+    		} catch (SQLException e) {
+    			System.out.println(e.getMessage());
+    			System.err.println(e.getStackTrace());
+    		}
+        }
+		return new Show(mTitle, mDate, mVenue, mFreeSeats);
+	}
+    /* --- TODO: Almost done --- */
+  	
+    public boolean login(String uname) {
+        java.sql.Statement stmt = null;
+        try {
+            stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT username FROM User WHERE username = '" + uname + "'");
+            if (rs.next()) {
+                currName = uname;
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+  	
     public List<String> getTitles() {
         List<String> titles = new ArrayList<>();
         try {
@@ -165,8 +198,9 @@ public class Database {
         }
         return dates;
     }
-    
-    public void makeBooking(Show s) {
+  	
+    public int makeBooking(Show s) {
+    	Integer booking = null;
     	try {
     			//update db
     			java.sql.Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
@@ -180,40 +214,29 @@ public class Database {
         		rsa.updateString("theaterName", s.getVenue());
         		// commit insertion
         		rsa.insertRow();
+        		rsa.last();
+        		booking = rsa.getInt(1);
+        		//String getBookingQuery = "select nbr from Reservation";
+        		//rsa = stmt.executeQuery(getBookingQuery);
+        		//rsa.last();
         		
-        		// update free seats
-        		rsa = stmt.executeQuery("select freeSeats from Shows where movieTitle='"+s.getTitle()+"'"+" and dayOfShow='"+s.getDate() + " and theaterName='" + s.getVenue());
-        		rsa.updateInt("freeSeats", s.getSeats()-1);
+        		System.out.println("Your booking number is: " + booking);
+    			String updateseatQuery = "update Shows set freeSeats=?-1 where movieTitle=? and dayOfShow=? and theaterName=? and freeSeats > 0;";
+    			java.sql.PreparedStatement ps = conn.prepareStatement(updateseatQuery);
+        		ps.setInt(1, s.getSeats());
+        		ps.setString(2, s.getTitle());
+        		ps.setString(3, s.getDate());
+        		ps.setString(4, s.getVenue());
+        		if(ps.executeUpdate()!=1) throw new Exception("Fucking error");
+        		ps.close();
+        		rsa.close();
         } catch (SQLException e) {
+        	System.err.print(e.getStackTrace());
             System.out.println(e.getMessage());
-        	System.err.println(e.getStackTrace());
+        	// System.err.println(e.getStackTrace());
+        } catch (Exception e) {
+        	System.out.println(e.getCause() + "\n" + e.getMessage());
         }
+    	return booking;
     }
-    
-  	public Show getShowData(String mTitle, String mDate) {
-		Integer mFreeSeats = null;
-		String mVenue = null;
-        if(isConnected()) {
-        	System.out.println("We are live. biatch");
-        	try {
-        		String query = null;
-        		query = "select movieTitle, dayOfShow, freeSeats, theaterName from Shows where movieTitle='"+mTitle + "' and " + "dayOfShow='" + mDate+"'";
-    			java.sql.Statement stmta = conn.createStatement();
-    			ResultSet rs = stmta.executeQuery(query);
-    			//		rs.last(); // used to go "beyond" the table, therefore grab the last row
-    			if(rs.next()) {
-    				mVenue = rs.getString("theaterName");
-        			mFreeSeats = rs.getInt("freeSeats");
-        			System.out.println("Found movie showing at: " + mVenue + " at the date you given; " + rs.getString("dayOfShow"));
-        			System.out.println("Remaining seats are : " + mFreeSeats);	
-    			}
-    		} catch (SQLException e) {
-    			// TODO Auto-generated catch block
-    			System.out.println(e.getMessage());
-    			System.err.println(e.getStackTrace());
-    		}
-        }
-		return new Show(mTitle, mDate, mVenue, mFreeSeats);
-	}
-    /* --- TODO: insert more own code here --- */
 }

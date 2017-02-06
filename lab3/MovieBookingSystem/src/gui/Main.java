@@ -36,7 +36,7 @@ public class Main extends Application {
 			
 			// opening database connection
 	        /* --- TODO: change xxx to your user name, yyy to your passowrd --- */	        
-	        if(!db.openConnection("xxx", "yyy")) {
+	        if(!db.openConnection("root", "idx2003")) {
 	            Alert alert = new Alert(AlertType.ERROR);
 	            alert.setTitle("Database error");
 	            alert.setHeaderText(null);

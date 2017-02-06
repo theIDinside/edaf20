@@ -1,5 +1,56 @@
 -- LAB2 EDAF20 --
 
+-- tables we need; User, Show, Reservation, Theater
+--
+--  |user| --- book ---- |Show|--- shows in
+-- 	        | 		      |
+--	        |      		      |
+--	  |Reservation|		  |Theater|
+
+
+
+-- (a)
+set foreign_key_checks = 0;
+drop table if exists User 
+create table User
+(username varchar(20),
+addr varchar(30) not null,
+phone varchar(9),
+name varchar(20),
+primary key(username));
+
+drop table if exists Show
+create table Show
+(movieTitle varchar(50),
+dayOfShow date not null, 
+freeSeats integer not null,
+theaterName varchar(30) not null,
+primary key(movieTitle, dayOfShow),
+foreign key(theaterName) references Theater(name));
+
+drop table if exists Theater
+create table Theater (
+name varchar(30)
+seats integer not null,
+primary key(name));
+
+drop table if exists Reservation 
+create table Theater 
+(nbr integer not null auto_increment 
+username varchar(20) not null,
+movieTitle varchar(50) not null,
+dayOfshow date not null,
+theaterName varchar(30) not null,
+primary key(nbr),
+foreign key (username) references User(username),
+foreign key (movieTitle, dayOfShow) references Show(movieTitle, dayOfShow),
+foreign key (theaterName) references Theater(name)
+);
+
+set foreign_key_checks = 1;
+
+
+
 
 -- (a)
 set foreign_key_checks = 0;
