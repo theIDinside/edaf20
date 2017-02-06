@@ -40,9 +40,6 @@ public class Database {
     	}
     }
     
-    private static String[] usrName = {"root", "test" };
-    private static String[] pword = {"idx2003","test"}; 
-    private static String[] server = {"localhost:3306/", "puccini.cs.lth.se/"};
     
     /*
      * ADDED BY ME ENDS 
@@ -69,7 +66,7 @@ public class Database {
         try {
             Class.forName("com.mysql.jdbc.Driver");
             conn = DriverManager.getConnection("jdbc:mysql://localhost/lab2?" +
-            		"user=root&password=idx2003"); 
+            		"user=root&password=abc123"); 
             // conn = DriverManager.getConnection("jdbc:mysql://" + server[IV.HOME.getValue()] + "/lab2", usrName[IV.HOME.getValue()], pword[IV.HOME.getValue()]);
         }
         catch (SQLException e) {
