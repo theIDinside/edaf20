@@ -9,6 +9,8 @@ import javafx.scene.text.Text;
 
 import java.util.List;
 
+import javax.swing.event.ChangeListener;
+
 import datamodel.CurrentUser;
 import datamodel.Database;
 import datamodel.Show;
@@ -71,17 +73,15 @@ public class BookingTab {
 				(event) -> {
 					String movie = moviesList.getSelectionModel().getSelectedItem();
 					String date = datesList.getSelectionModel().getSelectedItem();
-					System.out.println("Movie: " + movie + " date: " + date);
 					Show s = db.getShowData(movie, date);
-					int ticket = 0;
-					if(!(s.getSeats() <= 0)) 
-						ticket = db.makeBooking(s);
-					else { 
-						System.out.println("No seats left!");
+					Integer ticket = db.makeBooking(s);
+					if(ticket == null) report("No tickets left!");
+					else {
+						report("Booked one ticket to "+movie+" on "+date +" \n with booking number: " + ticket);
+						fillShow(movie, date);
 					}
-					report("Booked one ticket to "+movie+" on "+date +" \n with booking number: " + ticket);
+					
 				});
-		
 		report("Ready.");
 	}
 	

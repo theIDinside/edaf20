@@ -199,13 +199,14 @@ public class Database {
         return dates;
     }
   	
-    public int makeBooking(Show s) {
+    public Integer makeBooking(Show s) {
     	Integer booking = null;
-    	try {
+    	if(s.getSeats() <= 0) return null;
+    	try(java.sql.Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+    		java.sql.PreparedStatement ps = conn.prepareStatement("update Shows set freeSeats=?-1 where movieTitle=? and dayOfShow=? and theaterName=? and freeSeats > 0;");) {
     			//update db
-    			java.sql.Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
-        		String reserve = "select * from Reservation";
-        		ResultSet rsa = stmt.executeQuery(reserve);
+    			
+        		ResultSet rsa = stmt.executeQuery("select * from Reservation");
         		// move to insert row into Reservation 
         		rsa.moveToInsertRow();
         		rsa.updateString("username", currName);
@@ -216,26 +217,22 @@ public class Database {
         		rsa.insertRow();
         		rsa.last();
         		booking = rsa.getInt(1);
-        		//String getBookingQuery = "select nbr from Reservation";
-        		//rsa = stmt.executeQuery(getBookingQuery);
-        		//rsa.last();
         		
-        		System.out.println("Your booking number is: " + booking);
-    			String updateseatQuery = "update Shows set freeSeats=?-1 where movieTitle=? and dayOfShow=? and theaterName=? and freeSeats > 0;";
-    			java.sql.PreparedStatement ps = conn.prepareStatement(updateseatQuery);
-        		ps.setInt(1, s.getSeats());
+    			// update the free number of seats   			
+    			ps.setInt(1, s.getSeats()); // the other fields are primary keys
         		ps.setString(2, s.getTitle());
         		ps.setString(3, s.getDate());
         		ps.setString(4, s.getVenue());
-        		if(ps.executeUpdate()!=1) throw new Exception("Fucking error");
-        		ps.close();
-        		rsa.close();
+        		if(ps.executeUpdate()!=1) {
+        			throw new Exception("Some random fucking error");
+        		}
+        		
         } catch (SQLException e) {
-        	System.err.print(e.getStackTrace());
-            System.out.println(e.getMessage());
-        	// System.err.println(e.getStackTrace());
+        	System.err.print(e.getStackTrace()); System.out.println(e.getMessage());
+        	return null;
         } catch (Exception e) {
         	System.out.println(e.getCause() + "\n" + e.getMessage());
+        	return null;
         }
     	return booking;
     }
