@@ -38,13 +38,13 @@ public class BookingTab {
 	private Database db;
 	private Show crtShow = new Show();
 	
+	@SuppressWarnings({ "unchecked", "restriction" })
 	public void initialize() {
 		System.out.println("Initializing BookingTab");
 				
 		fillNamesList();
 		fillDatesList(null);
 		fillShow(null,null);
-		
 		// set up listeners for the movie list selection
 		moviesList.getSelectionModel().selectedItemProperty().addListener(
 				(obs, oldV, newV) -> {
@@ -71,6 +71,9 @@ public class BookingTab {
 				(event) -> {
 					String movie = moviesList.getSelectionModel().getSelectedItem();
 					String date = datesList.getSelectionModel().getSelectedItem();
+					System.out.println("Movie: " + movie + " date: " + date);
+					Show s = db.getShowData(movie, date);
+					if(!(s.getSeats() <= 0)) db.makeBooking(s);
 					/* --- TODO: should attempt to book a ticket via the database --- */
 					/* --- do not forget to report booking number! --- */
 					/* --- update the displayed details (free seats) --- */
@@ -95,34 +98,33 @@ public class BookingTab {
 		this.db = db;
 	}
 	
+	public boolean dbSet() {
+		return this.db != null;
+	}
+	
 	private void fillNamesList() {
 		List<String> allmovies = new ArrayList<String>();
-		
+		ArrayList<Show> allData = null;
 		// query the database via db
 		/* --- TODO: replace with own code --- */
-		allmovies.add("Pulp Fiction");
-		allmovies.add("The Big Lebowski");
-		allmovies.add("Whiplash");
-		/* --- END TODO --- */		
-		
+		if(dbSet()) {
+			allmovies = db.getTitles();
+		}
 		moviesList.setItems(FXCollections.observableList(allmovies));
 		// remove any selection
 		moviesList.getSelectionModel().clearSelection();
 	}
 
 	private void fillDatesList(String m) {
-		List<String> alldates = new ArrayList<String>();
-		if(m!=null) {
-			// query the database via db
-			/* --- TODO: replace with own code --- */
-			alldates.add("2016-02-01");
-			alldates.add("2016-01-15");
-			/* --- END TODO --- */			
-		}
-		datesList.setItems(FXCollections.observableList(alldates));
-		// remove any selection
-		datesList.getSelectionModel().clearSelection();
-	}
+        List<String> alldates = new ArrayList<String>();
+        if(m!=null) {
+            alldates = db.getDates(m);
+        }
+        datesList.setItems(FXCollections.observableList(alldates));
+        // remove any selection
+        datesList.getSelectionModel().clearSelection();
+    }
+
 	
 	private void fillShow(String movie, String date) {
 		if(movie==null) // no movie selected

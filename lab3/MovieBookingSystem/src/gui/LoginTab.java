@@ -30,29 +30,24 @@ public class LoginTab {
 	        alert.showAndWait();      	
         } else {
             String uname = username.getText();
-            
-            /* --- TODO: add code to query the database credentials --- */
-        	// could be if(!db.login(uname)) alert...
-
-        	// inform the user that there is no check against the database
-	        Alert alert = new Alert(AlertType.INFORMATION);
-	        alert.setTitle("Login fail");
-	        alert.setHeaderText(null);
-	        alert.setContentText("No user check implemented yet!");
-	        alert.showAndWait();
-	        /* --- END TODO --- */
-	        
-            // setting the user name
-	        CurrentUser.instance().loginAs(uname);
-	        
-	        // inform the user about logging in
-	        actiontarget.setText("Sign in user "+uname);        
-    	
-	        // inform booking tab of user change
-	        bookingTabCtrl.userChanged();
+            if (!db.login(uname)) {
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Login fail");
+                alert.setHeaderText(null);
+                alert.setContentText("Could not find user with username " + username.getText());
+                alert.showAndWait();
+            } else {
+                // setting the user name
+    	        CurrentUser.instance().loginAs(uname);
+    	        // inform the user about logging in
+    	        actiontarget.setText("Sign in user "+uname);        
+    	        // inform booking tab of user change
+    	        bookingTabCtrl.userChanged();	
+            }
         }
     }
 
+    
     public void initialize() {
     	System.out.println("Initializing LoginTab.");    	
     }
