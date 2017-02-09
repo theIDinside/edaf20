@@ -127,27 +127,20 @@ public class Database {
     public boolean isConnected() {
         return conn != null;
     }
-    
 
-    
-
-    
   	public Show getShowData(String mTitle, String mDate) {
 		Integer mFreeSeats = null;
 		String mVenue = null;
         if(isConnected()) {
-        	System.out.println("We are live. biatch");
         	try {
         		String query = null;
         		query = "select movieTitle, dayOfShow, freeSeats, theaterName from Shows where movieTitle='"+mTitle + "' and " + "dayOfShow='" + mDate+"'";
     			java.sql.Statement stmta = conn.createStatement();
     			ResultSet rs = stmta.executeQuery(query);
-    			//		rs.last(); // used to go "beyond" the table, therefore grab the last row
+    			// rs.last(); // used to go "beyond" the table, therefore grab the last row
     			if(rs.next()) {
     				mVenue = rs.getString("theaterName");
         			mFreeSeats = rs.getInt("freeSeats");
-        			System.out.println("Found movie showing at: " + mVenue + " at the date you given; " + rs.getString("dayOfShow"));
-        			System.out.println("Remaining seats are : " + mFreeSeats);	
     			}
     		} catch (SQLException e) {
     			System.out.println(e.getMessage());
@@ -156,7 +149,8 @@ public class Database {
         }
 		return new Show(mTitle, mDate, mVenue, mFreeSeats);
 	}
-    /* --- TODO: Almost done --- */
+
+  	/* --- TODO: Almost done --- */
   	
     public boolean login(String uname) {
         java.sql.Statement stmt = null;
@@ -176,7 +170,12 @@ public class Database {
     public List<String> getTitles() {
         List<String> titles = new ArrayList<>();
         try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT movieTitle FROM Shows");
+            // 
+        	ResultSet rs =	conn
+        					.createStatement()
+        					.executeQuery("select movieTitle "
+        								+ "from Shows "
+        								+ "group by movieTitle");
             while (rs.next()) {
                 titles.add(rs.getString("movieTitle"));
             }
@@ -189,7 +188,14 @@ public class Database {
     public List<String> getDates(String m) {
         List<String> dates = new ArrayList<>();
         try {
-            ResultSet rs = conn.createStatement().executeQuery("SELECT dayOfShow FROM Shows WHERE movieTitle = '" + m +"'");
+        	
+        	// select movieTitle from Shows group by Shows.movieTitle;
+            ResultSet rs = 
+            		conn
+            		.createStatement()
+            		.executeQuery("select dayOfShow "
+            					+ "from Shows "
+            					+ "where movieTitle = '" + m +"'");
             while (rs.next()) {
                 dates.add(rs.getString("dayOfShow"));
             }

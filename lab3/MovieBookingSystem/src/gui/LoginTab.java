@@ -20,7 +20,6 @@ public class LoginTab {
     private Database db;
        
     @FXML protected void handleSubmitButtonAction(ActionEvent event) {
-    	
         if(!db.isConnected()) {
 	        // inform the user that there is no check against the database
 	        Alert alert = new Alert(AlertType.ERROR);
@@ -46,7 +45,6 @@ public class LoginTab {
             }
         }
     }
-
     
     public void initialize() {
     	System.out.println("Initializing LoginTab.");    	
